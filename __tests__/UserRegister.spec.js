@@ -94,4 +94,16 @@ describe('User Registration', () => {
     const body = response.body;
     expect(body.validationErrors[field]).toBe(message);
   });
+
+  it('should return E-mail in use when same email is already in use', async () => {
+    await User.create({ ...validUser });
+    const response = await postUser();
+    expect(response.body.validationErrors.email).toBe('E-mail in use');
+  });
+
+  it('should return errors for both usernam is null and E-mail in use', async () => {
+    await User.create({ ...validUser });
+    const response = await postUser({ ...validUser, username: null });
+    expect(Object.keys(response.body.validationErrors)).toEqual(['username', 'email']);
+  });
 });

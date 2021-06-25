@@ -15,6 +15,18 @@ router.post(
     .bail()
     .isLength({ max: 32 })
     .withMessage('Must have min 4 and max 32 characters'),
+  check('email')
+    .notEmpty()
+    .withMessage('E-mail cannot be null')
+    .bail()
+    .isEmail()
+    .withMessage('E-mail is not valid')
+    .custom(async (email) => {
+      const user = await UserService.findByEmail(email);
+      if (user) {
+        throw new Error('E-mail in use');
+      }
+    }),
   check('password')
     .notEmpty()
     .withMessage('Password cannot be null')
@@ -24,7 +36,6 @@ router.post(
     .bail()
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/)
     .withMessage('Password must have at least 1 upsercase, 1 losercase and 1 number'),
-  check('email').notEmpty().withMessage('E-mail cannot be null').bail().isEmail().withMessage('E-mail is not valid'),
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
