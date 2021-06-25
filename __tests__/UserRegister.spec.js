@@ -70,34 +70,26 @@ describe('User Registration', () => {
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email']);
   });
 
-  // it.each([
-  //   ['username', 'Username cannot be null'],
-  //   ['email', 'E-mail cannot be null'],
-  //   ['password', 'Password cannot be null'],
-  // ])('when %s is null %s is received', async (field, expectedMessage) => {
-  //   const user = {
-  //     username: 'user1',
-  //     email: 'user1@mail.com',
-  //     password: 'P4ssword',
-  //   };
-  //   user[field] = null;
-  //   const response = await postUser(user);
-  //   const body = response.body;
-  //   expect(body.validationErrors[field]).toBe(expectedMessage);
-  // });
-
   it.each`
-    field         | message
-    ${'username'} | ${'Username cannot be null'}
-    ${'email'}    | ${'E-mail cannot be null'}
-    ${'password'} | ${'Password cannot be null'}
-  `('should return $message when $field is null', async ({ field, message }) => {
-    const user = {
-      username: 'user1',
-      email: 'user1@mail.com',
-      password: 'P4ssword',
-    };
-    user[field] = null;
+    field         | value              | message
+    ${'username'} | ${null}            | ${'Username cannot be null'}
+    ${'username'} | ${'usr'}           | ${'Must have min 4 and max 32 characters'}
+    ${'username'} | ${'a'.repeat(33)}  | ${'Must have min 4 and max 32 characters'}
+    ${'email'}    | ${null}            | ${'E-mail cannot be null'}
+    ${'email'}    | ${'mail.com'}      | ${'E-mail is not valid'}
+    ${'email'}    | ${'user.mail.com'} | ${'E-mail is not valid'}
+    ${'email'}    | ${'user@com'}      | ${'E-mail is not valid'}
+    ${'password'} | ${null}            | ${'Password cannot be null'}
+    ${'password'} | ${'P4ssw'}         | ${'Password must be at least 6 characters long'}
+    ${'password'} | ${'alllowercase'}  | ${'Password must have at least 1 upsercase, 1 losercase and 1 number'}
+    ${'password'} | ${'ALLUPPERCASE'}  | ${'Password must have at least 1 upsercase, 1 losercase and 1 number'}
+    ${'password'} | ${'123456779'}     | ${'Password must have at least 1 upsercase, 1 losercase and 1 number'}
+    ${'password'} | ${'lowerandUPPER'} | ${'Password must have at least 1 upsercase, 1 losercase and 1 number'}
+    ${'password'} | ${'lower12321'}    | ${'Password must have at least 1 upsercase, 1 losercase and 1 number'}
+    ${'password'} | ${'UPPER12321'}    | ${'Password must have at least 1 upsercase, 1 losercase and 1 number'}
+  `('should return $message when $field is $value', async ({ field, value, message }) => {
+    const user = { ...validUser };
+    user[field] = value;
     const response = await postUser(user);
     const body = response.body;
     expect(body.validationErrors[field]).toBe(message);
