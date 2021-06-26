@@ -1,6 +1,7 @@
 const request = require('supertest');
 const app = require('../src/app');
 const sequelize = require('../src/config/database');
+const bcrypt = require('bcrypt');
 const User = require('../src/user/User');
 const en = require('../locales/en/translation.json');
 const np = require('../locales/np/translation.json');
@@ -13,15 +14,22 @@ beforeEach(async () => {
   return User.destroy({ truncate: true });
 });
 
-const getUsers = () => {
-  return request(app).get('/api/1.0/users');
+const getUsers = (options = {}) => {
+  const agent = request(app).get('/api/1.0/users');
+  if (options.auth) {
+    const { email, password } = options.auth;
+    agent.auth(email, password);
+  }
+  return agent;
 };
 const addUsers = async (activeCount = 11, inactiveCount = 0) => {
+  const hash = await bcrypt.hash('P4ssword', 10);
   for (let i = 0; i < activeCount + inactiveCount; i++) {
     await User.create({
       username: `user${i + 1}`,
       email: `user${i + 1}@mail.com`,
       inactive: i >= activeCount,
+      password: hash,
     });
   }
 };
@@ -101,15 +109,20 @@ describe('User Listing', () => {
     expect(response.body.size).toBe(10);
   });
 
-  it('should return 10 users and corresponding indicator when size is 0', async () => {
+  it('should return page as zero and size as 10 when non numeric query params is sent', async () => {
     await addUsers();
-    const response = await getUsers().query({ size: 0 });
-    expect(response.body.items.length).toBe(10);
+    const response = await getUsers().query({ size: 'size', page: 'page' });
     expect(response.body.size).toBe(10);
+    expect(response.body.page).toBe(0);
+  });
+  it('should return page without logged in user when requets has valid auth', async () => {
+    await addUsers(11);
+    const response = await getUsers({ auth: { email: 'user1@mail.com', password: 'P4ssword' } });
+    expect(response.body.totalPages).toBe(1);
   });
 });
 
-describe('User Listing', () => {
+describe('Get User', () => {
   const getUser = (id = 5) => {
     return request(app).get(`/api/1.0/users/${id}`);
   };

@@ -3,9 +3,9 @@ const crypto = require('crypto');
 const User = require('./User');
 const EmailService = require('../email/EmailService');
 const sequelize = require('../config/database');
+const Sequelize = require('sequelize');
 const EmailException = require('../email/EmailException');
 const InvalidTokenException = require('../user/InvalidTokenException');
-const { userInfo } = require('os');
 const UserNotFondException = require('./UserNotFondException');
 
 const generateToken = (length = 16) => {
@@ -41,9 +41,14 @@ const activate = async (token) => {
   await user.save();
 };
 
-const getUsers = async (page, size) => {
+const getUsers = async (page, size, authUser) => {
   const usersWithCount = await User.findAndCountAll({
-    where: { inactive: false },
+    where: {
+      inactive: false,
+      id: {
+        [Sequelize.Op.not]: authUser ? authUser.id : 0,
+      },
+    },
     attributes: ['id', 'username', 'email'],
     limit: size,
     offset: page * size,
