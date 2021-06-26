@@ -345,7 +345,9 @@ describe('Error Model', () => {
   });
 
   it('should return path, timestamp, message and validationErrors in response validation Failure occures ', async () => {
-    const response = await postUser();
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + 'this-tokne-doesnot-exist')
+      .send();
     const { body } = response;
     expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message']);
   });
@@ -361,7 +363,7 @@ describe('Error Model', () => {
     const fiveSecondsLater = nowInMillies + 5 * 1000;
     const response = await postUser({ ...validUser, email: null });
     const { body } = response;
-    expect(body.timestamps).toBeGreaterThan(nowInMillies);
-    expect(body.timestamps).toBeLessThan(fiveSecondsLater);
+    expect(body.timestamp).toBeGreaterThan(nowInMillies);
+    expect(body.timestamp).toBeLessThan(fiveSecondsLater);
   });
 });
