@@ -29,5 +29,13 @@ router.post('/api/1.0/auth', check('email').isEmail(), async (req, res, next) =>
   const token = await TokenService.createToken(user);
   res.send({ id: user.id, username: user.username, token: token });
 });
+router.post('/api/1.0/logout', async (req, res) => {
+  const authorization = req.headers.authorization;
+  if (authorization) {
+    const token = authorization.substring(7);
+    await TokenService.tokenDelete(token);
+  }
+  res.send();
+});
 
 module.exports = router;
