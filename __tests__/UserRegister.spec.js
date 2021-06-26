@@ -3,6 +3,8 @@ const app = require('../src/app');
 const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
 const { SMTPServer } = require('smtp-server');
+const en = require('../locales/en/translation.json');
+const np = require('../locales/np/translation.json');
 
 let lastMail, server;
 let simulateSmtpFailure = false;
@@ -31,9 +33,9 @@ beforeAll(async () => {
   await sequelize.sync();
 });
 
-beforeEach(() => {
+beforeEach(async () => {
   simulateSmtpFailure = false;
-  return User.destroy({ truncate: true });
+  await User.destroy({ truncate: true });
 });
 
 afterAll(async () => {
@@ -55,15 +57,16 @@ const postUser = (user = validUser, options = {}) => {
 };
 
 describe('User Registration', () => {
-  const username_null = 'Username cannot be null';
-  const username_size = 'Must have min 4 and max 32 characters';
-  const email_null = 'E-mail cannot be null';
-  const email_invalid = 'E-mail is not valid';
-  const password_null = 'Password cannot be null';
-  const password_size = 'Password must be at least 6 characters long';
-  const password_pattern = 'Password must have at least 1 upsercase, 1 losercase and 1 number';
-  const email_inuse = 'E-mail in use';
-  const user_create_success = 'User created';
+  const username_null = en.username_null;
+  const username_size = en.username_size;
+  const email_null = en.email_null;
+  const email_invalid = en.email_invalid;
+  const password_null = en.password_null;
+  const password_size = en.password_size;
+  const password_pattern = en.password_pattern;
+  const email_inuse = en.email_inuse;
+  const user_create_success = en.user_created;
+  const validation_failure = en.validation_failure;
 
   it('should return 200 ok when signup request is valid', async () => {
     const response = await postUser();
@@ -200,22 +203,22 @@ describe('User Registration', () => {
 
   it('should return Validation Failure message in error reponse body when validation fails', async () => {
     const response = await postUser({ ...validUser, email: null });
-    expect(response.body.message).toBe('Validation Failure');
+    expect(response.body.message).toBe(validation_failure);
   });
 });
 
 describe('Internalization', () => {
-  const username_null = 'प्रयोगकर्ता नाम खाली हुन सक्दैन';
-  const username_size = 'न्यूनतम दुई र अधिकतम बत्तिस क्यारेक्टर हुनै पर्दछ';
-  const email_null = 'इ-मेल खाली हुन सक्दैन';
-  const email_invalid = 'इ-मेल मान्य छैन';
-  const password_null = 'पासवर्ड खाली हुन सक्दैन';
-  const password_size = 'पासवर्ड कम्तिमा 6 अक्षरको हुनु पर्दछ';
-  const password_pattern = 'पासवर्ड कम्तिमा १ अपसेरकेस, १ लॉजरकेस र १ नम्बर हुनुपर्दछ';
-  const email_inuse = 'प्रयोगमा इ-मेल';
-  const user_create_success = 'प्रयोगकर्ता सिर्जना गरियो';
-  const email_failure = 'ईमेल असफलता';
-  const validation_failure = 'प्रमाणीकरण विफलता';
+  const username_null = np.username_null;
+  const username_size = np.username_size;
+  const email_null = np.email_null;
+  const email_invalid = np.email_invalid;
+  const password_null = np.password_null;
+  const password_size = np.password_size;
+  const password_pattern = np.password_pattern;
+  const email_inuse = np.email_inuse;
+  const user_create_success = np.user_created;
+  const email_failure = np.email_failure;
+  const validation_failure = np.validation_failure;
 
   it.each`
     field         | value              | message
@@ -315,10 +318,10 @@ describe('Account Activate,', () => {
 
   it.each`
     language | tokenStatus  | message
-    ${'np'}  | ${'wrong'}   | ${'यो खाता या त सक्रिय छ वा टोकन अवैध छ'}
-    ${'en'}  | ${'wrong'}   | ${'This account is either active or token is invalid'}
-    ${'np'}  | ${'correct'} | ${'खाता सक्रिय गरिएको छ'}
-    ${'en'}  | ${'correct'} | ${'Account is activated'}
+    ${'np'}  | ${'wrong'}   | ${np.account_activation_failure}
+    ${'en'}  | ${'wrong'}   | ${en.account_activation_failure}
+    ${'np'}  | ${'correct'} | ${np.account_activation_successful}
+    ${'en'}  | ${'correct'} | ${en.account_activation_successful}
   `(
     'should return $message when token is $tokenStatus and langage is $language',
     async ({ language, tokenStatus, message }) => {

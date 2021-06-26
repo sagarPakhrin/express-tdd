@@ -3,6 +3,8 @@ const app = require('../src/app');
 const bcrypt = require('bcrypt');
 const sequelize = require('../src/config/database');
 const User = require('../src/user/User');
+const en = require('../locales/en/translation.json');
+const np = require('../locales/np/translation.json');
 
 beforeAll(async () => {
   await sequelize.sync();
@@ -56,8 +58,8 @@ describe('User Auth', () => {
 
   it.each`
     language | message
-    ${'en'}  | ${'Incorect credentials'}
-    ${'np'}  | ${'गलत प्रमाणहरू'}
+    ${'en'}  | ${en.incorrect_credentials}
+    ${'np'}  | ${np.incorrect_credentials}
   `('returns $message when language is $language', async ({ language, message }) => {
     const res = await postAuth({ email: activeUser.email, password: activeUser.password }, { language });
     expect(res.body.message).toBe(message);
@@ -87,8 +89,8 @@ describe('User Auth', () => {
 
   it.each`
     language | message
-    ${'en'}  | ${'Account Inactive'}
-    ${'np'}  | ${'खाता निष्क्रिय'}
+    ${'en'}  | ${en.inactive_auth_failure}
+    ${'np'}  | ${np.inactive_auth_failure}
   `('returns $message when language is $language', async ({ language, message }) => {
     await addUser({ ...activeUser, inactive: true });
     const res = await postAuth({ email: activeUser.email, password: activeUser.password }, { language });
