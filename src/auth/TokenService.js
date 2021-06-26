@@ -3,4 +3,8 @@ const createToken = (user) => {
   return jwt.sign({ id: user.id }, 'this-is-our-secret');
 };
 
-module.exports = { createToken };
+const verifyToken = (token) => {
+  return jwt.verify(token, 'this-is-our-secret');
+};
+
+module.exports = { createToken, verifyToken };

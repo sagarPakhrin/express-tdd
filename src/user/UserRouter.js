@@ -2,9 +2,9 @@ const express = require('express');
 const { check, validationResult } = require('express-validator');
 const ValidationException = require('../error/ValidationException');
 const UserService = require('./UserService');
-const basicAuthentication = require('../middlewares/basicAuth');
 const { pagination } = require('../middlewares/pagination');
 const ForbiddenException = require('../error/ForbiddenException');
+const tokenAuthentication = require('../middlewares/tokenAuthentication');
 
 const router = express.Router();
 
@@ -66,7 +66,7 @@ router.post('/api/1.0/users/token/:token', async (req, res, next) => {
   }
 });
 
-router.get('/api/1.0/users', basicAuthentication, pagination, async (req, res) => {
+router.get('/api/1.0/users', tokenAuthentication, pagination, async (req, res) => {
   const { page, size } = req.pagination;
   const authUser = req.authenticatedUser;
   const users = await UserService.getUsers(page, size, authUser);
@@ -81,7 +81,7 @@ router.get('/api/1.0/users/:id', async (req, res, next) => {
     next(err);
   }
 });
-router.put('/api/1.0/users/:id', basicAuthentication, async (req, res, next) => {
+router.put('/api/1.0/users/:id', tokenAuthentication, async (req, res, next) => {
   const authUser = req.authenticatedUser;
 
   // eslint-disable-next-line eqeqeq
