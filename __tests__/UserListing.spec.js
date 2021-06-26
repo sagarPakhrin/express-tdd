@@ -64,4 +64,17 @@ describe('User Listing', () => {
     const response = await getUsers();
     expect(response.body.totalPages).toBe(2);
   });
+
+  it('should second page users and page indicator when page is set as 1', async () => {
+    await addUsers();
+    const response = await getUsers().query({ page: 1 });
+    expect(response.body.items[0].username).toBe('user11');
+    expect(response.body.page).toBe(1);
+  });
+
+  it('should first page when page is below 0', async () => {
+    await addUsers();
+    const response = await getUsers().query({ page: -1 });
+    expect(response.body.page).toBe(0);
+  });
 });
