@@ -3,6 +3,7 @@ const app = require('../src/app');
 const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
 const nodemailerStub = require('nodemailer-stub');
+const EmailService = require('../src/email/EmailService');
 
 beforeAll(() => {
   return sequelize.sync();
@@ -151,6 +152,34 @@ describe('User Registration', () => {
     expect(lastMail.to[0]).toBe(validUser.email);
     expect(lastMail.content).toContain(savedUser.activationToken);
   });
+
+  it('should send 502 Bad Gateway when sending email fails', async () => {
+    const mockSendActivation = jest
+      .spyOn(EmailService, 'sendAccountActivation')
+      .mockRejectedValue({ message: 'Failed to deliver email' });
+    const response = await postUser();
+    expect(response.status).toBe(502);
+    mockSendActivation.mockRestore();
+  });
+
+  it('should Email failure message when sending email fails', async () => {
+    const mockSendActivation = jest
+      .spyOn(EmailService, 'sendAccountActivation')
+      .mockRejectedValue({ message: 'E-mail Failure' });
+    const response = await postUser();
+    mockSendActivation.mockRestore();
+    expect(response.body.message).toBe('E-mail Failure');
+  });
+
+  it('should not save user in databse when email fails', async () => {
+    const mockSendActivation = jest
+      .spyOn(EmailService, 'sendAccountActivation')
+      .mockRejectedValue({ message: 'E-mail Failure' });
+    await postUser();
+    mockSendActivation.mockRestore();
+    const users = await User.findAll();
+    expect(users.length).toBe(0);
+  });
 });
 
 describe('Internalization', () => {
@@ -163,6 +192,7 @@ describe('Internalization', () => {
   const password_pattern = 'पासवर्ड कम्तिमा १ अपसेरकेस, १ लॉजरकेस र १ नम्बर हुनुपर्दछ';
   const email_inuse = 'प्रयोगमा इ-मेल';
   const user_create_success = 'प्रयोगकर्ता सिर्जना गरियो';
+  const email_failure = 'ईमेल असफलता';
 
   it.each`
     field         | value              | message
@@ -203,5 +233,14 @@ describe('Internalization', () => {
   it(`should return success message of ${user_create_success} when requets is valid and language set to np`, async () => {
     const response = await postUser({ ...validUser }, { language: 'np' });
     expect(response.body.message).toBe(user_create_success);
+  });
+
+  it('should Email failure message when sending email fails', async () => {
+    const mockSendActivation = jest
+      .spyOn(EmailService, 'sendAccountActivation')
+      .mockRejectedValue({ message: 'E-mail Failure' });
+    const response = await postUser({ ...validUser }, { language: 'np' });
+    mockSendActivation.mockRestore();
+    expect(response.body.message).toBe(email_failure);
   });
 });
