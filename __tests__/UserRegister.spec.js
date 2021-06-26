@@ -31,6 +31,7 @@ beforeAll(async () => {
 
   server.listen(8587, 'localhost');
   await sequelize.sync();
+  jest.setTimeout(20000);
 });
 
 beforeEach(async () => {
@@ -40,6 +41,7 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await server.close();
+  jest.setTimeout(5000);
 });
 
 const validUser = {

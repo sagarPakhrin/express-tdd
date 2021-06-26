@@ -14,5 +14,6 @@
   "validation_failure": "प्रमाणीकरण विफलता",
   "user_not_found": "प्रयोगकर्ता फेला परेन",
   "incorrect_credentials": "गलत प्रमाणहरू",
-  "inactive_auth_failure": "खाता निष्क्रिय"
+  "inactive_auth_failure": "खाता निष्क्रिय",
+  "unauthorized_user_update": "तपाईं प्रयोगकर्ता अपडेट गर्न अधिकृत हुनुहुन्न"
 }
