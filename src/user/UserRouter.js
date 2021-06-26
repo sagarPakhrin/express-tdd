@@ -3,8 +3,6 @@ const { check, validationResult } = require('express-validator');
 const ValidationException = require('../error/ValidationException');
 const UserService = require('./UserService');
 const { pagination } = require('../middlewares/pagination');
-const UserNotFoundException = require('./UserNotFondException');
-const User = require('./User');
 
 const router = express.Router();
 
