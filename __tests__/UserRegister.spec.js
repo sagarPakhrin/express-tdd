@@ -2,6 +2,7 @@ const request = require('supertest');
 const app = require('../src/app');
 const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
+const nodemailerStub = require('nodemailer-stub');
 
 beforeAll(() => {
   return sequelize.sync();
@@ -119,6 +120,36 @@ describe('User Registration', () => {
     await User.create({ ...validUser });
     const response = await postUser({ ...validUser, username: null });
     expect(Object.keys(response.body.validationErrors)).toEqual(['username', 'email']);
+  });
+
+  it('should create user in inactive mode', async () => {
+    await postUser();
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.inactive).toBe(true);
+  });
+
+  it('should create user in inactive mode even if body has inactive set to false', async () => {
+    await postUser({ ...validUser, inactive: false });
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.inactive).toBe(true);
+  });
+
+  it('should create token for user', async () => {
+    await postUser();
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.activationToken).toBeTruthy();
+  });
+
+  it('should send account activateion email with activationToken', async () => {
+    await postUser({ ...validUser, inactive: false });
+    const users = await User.findAll();
+    const savedUser = users[0];
+    const lastMail = nodemailerStub.interactsWithMail.lastMail();
+    expect(lastMail.to[0]).toBe(validUser.email);
+    expect(lastMail.content).toContain(savedUser.activationToken);
   });
 });
 
