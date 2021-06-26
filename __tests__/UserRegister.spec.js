@@ -197,6 +197,11 @@ describe('User Registration', () => {
     const users = await User.findAll();
     expect(users.length).toBe(0);
   });
+
+  it('should return Validation Failure message in error reponse body when validation fails', async () => {
+    const response = await postUser({ ...validUser, email: null });
+    expect(response.body.message).toBe('Validation Failure');
+  });
 });
 
 describe('Internalization', () => {
@@ -210,6 +215,7 @@ describe('Internalization', () => {
   const email_inuse = 'प्रयोगमा इ-मेल';
   const user_create_success = 'प्रयोगकर्ता सिर्जना गरियो';
   const email_failure = 'ईमेल असफलता';
+  const validation_failure = 'प्रमाणीकरण विफलता';
 
   it.each`
     field         | value              | message
@@ -256,6 +262,11 @@ describe('Internalization', () => {
     simulateSmtpFailure = true;
     const response = await postUser({ ...validUser }, { language: 'np' });
     expect(response.body.message).toBe(email_failure);
+  });
+
+  it(`should return ${validation_failure} message in error reponse body when validation fails`, async () => {
+    const response = await postUser({ ...validUser, email: null }, { language: 'np' });
+    expect(response.body.message).toBe(validation_failure);
   });
 });
 
@@ -324,4 +335,33 @@ describe('Account Activate,', () => {
       expect(response.body.message).toBe(message);
     }
   );
+});
+
+describe('Error Model', () => {
+  it('should return path, timestamp, message in response', async () => {
+    const response = await postUser({ ...validUser, email: null });
+    const { body } = response;
+    expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message', 'validationErrors']);
+  });
+
+  it('should return path, timestamp, message and validationErrors in response validation Failure occures ', async () => {
+    const response = await postUser();
+    const { body } = response;
+    expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message']);
+  });
+
+  it('should return path in error body', async () => {
+    const response = await postUser({ ...validUser, email: null });
+    const { body } = response;
+    expect(body.path).toEqual('/api/1.0/users');
+  });
+
+  it('should return timestamp in milliseconds', async () => {
+    const nowInMillies = new Date().getTime();
+    const fiveSecondsLater = nowInMillies + 5 * 1000;
+    const response = await postUser({ ...validUser, email: null });
+    const { body } = response;
+    expect(body.timestamps).toBeGreaterThan(nowInMillies);
+    expect(body.timestamps).toBeLessThan(fiveSecondsLater);
+  });
 });
