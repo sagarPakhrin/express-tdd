@@ -36,10 +36,10 @@ describe('User Auth', () => {
     expect(res.status).toBe(200);
   });
 
-  it('should return id and username when login is success', async () => {
+  it('should return id, username, token when login is success', async () => {
     await addUser();
     const res = await postAuth({ email: activeUser.email, password: 'P4ssword' });
-    expect(Object.keys(res.body)).toEqual(['id', 'username']);
+    expect(Object.keys(res.body)).toEqual(['id', 'username', 'token']);
   });
 
   it('should return 401 when user dosenot exist', async () => {
@@ -105,5 +105,11 @@ describe('User Auth', () => {
   it('should return 401 when password is not valid', async () => {
     const res = await postAuth({ email: activeUser.email });
     expect(res.status).toBe(401);
+  });
+
+  it('should return token in response body when credentials are correct', async () => {
+    await addUser();
+    const res = await postAuth({ email: activeUser.email, password: 'P4ssword' });
+    expect(res.body.token).not.toBeUndefined();
   });
 });

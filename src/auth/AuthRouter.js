@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const UserService = require('../user/UserService');
 const router = express.Router();
 const AuthException = require('./AuthException');
+const TokenService = require('./TokenService');
 const ForbiddenException = require('../error/ForbiddenException');
 const { check, validationResult } = require('express-validator');
 
@@ -25,7 +26,8 @@ router.post('/api/1.0/auth', check('email').isEmail(), async (req, res, next) =>
     return next(new ForbiddenException());
   }
 
-  res.send({ id: user.id, username: user.username });
+  const token = TokenService.createToken(user);
+  res.send({ id: user.id, username: user.username, token: token });
 });
 
 module.exports = router;
