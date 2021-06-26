@@ -65,16 +65,44 @@ describe('User Listing', () => {
     expect(response.body.totalPages).toBe(2);
   });
 
-  it('should second page users and page indicator when page is set as 1', async () => {
+  it('should return second page users and page indicator when page is set as 1', async () => {
     await addUsers();
     const response = await getUsers().query({ page: 1 });
     expect(response.body.items[0].username).toBe('user11');
     expect(response.body.page).toBe(1);
   });
 
-  it('should first page when page is below 0', async () => {
+  it('should return first page when page is below 0', async () => {
     await addUsers();
     const response = await getUsers().query({ page: -1 });
     expect(response.body.page).toBe(0);
+  });
+
+  it('should return 5 users and corresponding indicator when size is set to 5', async () => {
+    await addUsers();
+    const response = await getUsers().query({ size: 5 });
+    expect(response.body.items.length).toBe(5);
+    expect(response.body.size).toBe(5);
+  });
+
+  it('should return 10 users and corresponding indicator when size is set to 1000', async () => {
+    await addUsers();
+    const response = await getUsers().query({ size: 1000 });
+    expect(response.body.items.length).toBe(10);
+    expect(response.body.size).toBe(10);
+  });
+
+  it('should return 10 users and corresponding indicator when size is less than 0', async () => {
+    await addUsers();
+    const response = await getUsers().query({ size: -2 });
+    expect(response.body.items.length).toBe(10);
+    expect(response.body.size).toBe(10);
+  });
+
+  it('should return 10 users and corresponding indicator when size is 0', async () => {
+    await addUsers();
+    const response = await getUsers().query({ size: 0 });
+    expect(response.body.items.length).toBe(10);
+    expect(response.body.size).toBe(10);
   });
 });
