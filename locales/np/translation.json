@@ -8,5 +8,7 @@
   "password_pattern": "पासवर्ड कम्तिमा १ अपसेरकेस, १ लॉजरकेस र १ नम्बर हुनुपर्दछ",
   "email_inuse": "प्रयोगमा इ-मेल",
   "user_created": "प्रयोगकर्ता सिर्जना गरियो",
-  "email_failure": "ईमेल असफलता"
+  "email_failure": "ईमेल असफलता",
+  "account_activation_successful": "खाता सक्रिय गरिएको छ",
+  "account_activation_failure": "यो खाता या त सक्रिय छ वा टोकन अवैध छ"
 }
