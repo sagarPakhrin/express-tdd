@@ -106,3 +106,61 @@ describe('User Listing', () => {
     expect(response.body.size).toBe(10);
   });
 });
+
+describe('User Listing', () => {
+  const getUser = (id = 5) => {
+    return request(app).get(`/api/1.0/users/${id}`);
+  };
+  it('should return 404 when user is not found', async () => {
+    const response = await getUser();
+    expect(response.status).toBe(404);
+  });
+
+  it.each`
+    language | message
+    ${'en'}  | ${'User not found'}
+    ${'np'}  | ${'प्रयोगकर्ता फेला परेन'}
+  `(`should return $message for unknown user when language is set to $language`, async ({ language, message }) => {
+    const response = await getUser().set('Accept-Language', language);
+    expect(response.body.message).toBe(message);
+  });
+
+  it('should return proper resonse body when user not found', async () => {
+    const nowInMillies = new Date().getTime();
+    const response = await getUser();
+    const error = response.body;
+    expect(error.path).toBe('/api/1.0/users/5');
+    expect(error.timestamp).toBeGreaterThan(nowInMillies);
+    expect(Object.keys(error)).toEqual(['path', 'timestamp', 'message']);
+  });
+
+  it('should return 200 ok when user is found', async () => {
+    const user = await User.create({
+      username: 'user1',
+      email: 'user1@mail.com',
+      inactive: false,
+    });
+    const response = await getUser(user.id);
+    expect(response.status).toBe(200);
+  });
+
+  it('should return id, username, email in response body', async () => {
+    const user = await User.create({
+      username: 'user1',
+      email: 'user1@mail.com',
+      inactive: false,
+    });
+    const response = await getUser(user.id);
+    expect(Object.keys(response.body)).toEqual(['id', 'username', 'email']);
+  });
+
+  it('should return 404 when user is inactive', async () => {
+    const user = await User.create({
+      username: 'user1',
+      email: 'user1@mail.com',
+      inactive: true,
+    });
+    const response = await getUser(user.id);
+    expect(response.status).toBe(404);
+  });
+});
